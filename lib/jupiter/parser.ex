@@ -1,21 +1,12 @@
 defmodule Jupiter.Parser do
   @prefix "j!"
-  @parse_blocks %{
-    "help" => [],
-    "ping" => [],
-    "register" => [{:url, "invite_link"}, {:role, "role"}],
-    "unregister" => [{:url, "invite_link"}],
-    "editregister" => [{:url, "invite_link"}, {:role, "role"}],
-    "setlogging" => [],
-    "list" => []
-  }
 
   def get_arg_map(@prefix <> message, dump) do
     parts =
       message
       |> String.split(" ")
       |> Enum.filter(&(&1 != ""))
-      |> parse([], nil)
+      |> join_parts([], nil)
 
     args = parse_command_body(parts, dump)
     command = Enum.at(parts, 0)
@@ -33,45 +24,45 @@ defmodule Jupiter.Parser do
 
   def get_arg_map(_, _), do: nil
 
-  defp parse([], acc, _), do: acc
+  defp join_parts([], acc, _), do: acc
+  defp join_parts(["\"" <> word | rest], acc, nil), do: join_parts(rest, acc, word)
+  defp join_parts([word | rest], acc, nil), do: join_parts(rest, acc ++ [word], nil)
 
-  defp parse(["\"" <> word | rest], acc, nil) do
-    parse(rest, acc, word)
-  end
-
-  defp parse([word | rest], acc, nil) do
-    parse(rest, acc ++ [word], nil)
-  end
-
-  defp parse([word | rest], acc, cur) do
+  defp join_parts([word | rest], acc, cur) do
     if String.ends_with?(word, "\"") do
-      parse(rest, acc ++ [cur <> " " <> String.slice(word, 0..-2//1)], nil)
+      join_parts(rest, acc ++ [cur <> " " <> String.slice(word, 0..-2//1)], nil)
     else
-      parse(rest, acc, cur <> " " <> word)
+      join_parts(rest, acc, cur <> " " <> word)
     end
   end
 
-  defp parse_command_body([command | _], _) when not is_map_key(@parse_blocks, command), do: nil
-
   defp parse_command_body([command | parts], dump) do
-    @parse_blocks
+    Jupiter.Commands.get_commands()
     |> Map.get(command)
-    |> parse_blocks(parts, %{}, dump)
+    |> then(fn
+      nil ->
+        {:error, :command_not_found}
+
+      command_details ->
+        command_details
+        |> Map.get(:components, [])
+        |> parse_parts(parts, %{}, dump)
+    end)
   end
 
-  defp parse_blocks([], _, acc, _), do: acc
+  defp parse_parts([], _, acc, _), do: {:ok, acc}
 
-  defp parse_blocks([{:url, name} | other_blocks], [url | rest], acc, dump) do
+  defp parse_parts([{:url, name} | other_blocks], [url | rest], acc, dump) do
     if is_valid_url?(url) do
-      parse_blocks(other_blocks, rest, Map.put(acc, name, url), dump)
+      parse_parts(other_blocks, rest, Map.put(acc, name, url), dump)
     else
       {:error, :invalid_url}
     end
   end
 
-  defp parse_blocks([{:role, name} | other_blocks], [role | rest], acc, dump) do
+  defp parse_parts([{:role, name} | other_blocks], [role | rest], acc, dump) do
     if(is_valid_role?(role, dump)) do
-      parse_blocks(other_blocks, rest, Map.put(acc, name, role), dump)
+      parse_parts(other_blocks, rest, Map.put(acc, name, role), dump)
     else
       {:error, :role_not_found}
     end
