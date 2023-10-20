@@ -22,7 +22,11 @@ defmodule Jupiter.Consumer do
     |> Jupiter.Parser.get_arg_map(msg)
     |> then(fn
       {:ok, args} ->
-        arg_map = Map.put(args, :channel_snowflake, msg.channel_id)
+        arg_map =
+          args
+          |> Map.put(:channel_snowflake, msg.channel_id)
+          |> Map.put(:server_snowflake, msg.guild_id)
+
         Jupiter.Commands.dispatch(arg_map)
 
         :ignore

@@ -1,4 +1,5 @@
 defmodule Jupiter.Commands do
+  # TODO: Allow disabling of logging
   @commands %{
     "help" => %{
       description: "Displays help text containing list of available commands."
@@ -23,7 +24,7 @@ defmodule Jupiter.Commands do
     },
     "setlogging" => %{
       description:
-        "Sets the channel that the command is being run to be the logging channel for the server"
+        "Sets the channel that the command is being run to be the logging channel for the server. Re-assigns previous logging channel if any."
     },
     "list" => %{
       description: "Lists the registered assignments for the current server."
@@ -31,7 +32,8 @@ defmodule Jupiter.Commands do
   }
   @command_router %{
     "ping" => &Jupiter.Commands.PingCommand.handle/1,
-    "help" => &Jupiter.Commands.HelpCommand.handle/1
+    "help" => &Jupiter.Commands.HelpCommand.handle/1,
+    "setlogging" => &Jupiter.Commands.SetLoggingCommand.handle/1
   }
 
   def dispatch(%{command: command} = arg_map) do

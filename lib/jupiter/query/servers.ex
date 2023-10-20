@@ -11,14 +11,17 @@ defmodule Jupiter.Query.Servers do
   end
 
   def add_logging_channel(server_snowflake, logging_channel_snowflake) do
-    server = get_server(server_snowflake)
+    server_snowflake_str = Nostrum.Snowflake.dump(server_snowflake)
+    logging_channel_snowflake_str = Nostrum.Snowflake.dump(logging_channel_snowflake)
+
+    server = get_server(server_snowflake_str)
 
     if is_nil(server) do
       {:error, :server_not_found}
     else
       changeset =
         Jupiter.Schemas.Server.changeset(server, %{
-          logging_channel_snowflake: logging_channel_snowflake
+          logging_channel_snowflake: logging_channel_snowflake_str
         })
 
       Jupiter.Repo.update(changeset)
