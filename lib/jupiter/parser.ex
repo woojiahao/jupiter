@@ -16,12 +16,19 @@ defmodule Jupiter.Parser do
       |> String.split(" ")
       |> Enum.filter(&(&1 != ""))
       |> parse([], nil)
+
     args = parse_command_body(parts, dump)
     command = Enum.at(parts, 0)
-    %{
-      command: command,
-      args: args
-    }
+
+    if elem(args, 0) == :error do
+      args
+    else
+      {:ok,
+       %{
+         command: command,
+         args: args
+       }}
+    end
   end
 
   def get_arg_map(_, _), do: nil
@@ -58,7 +65,7 @@ defmodule Jupiter.Parser do
     if is_valid_url?(url) do
       parse_blocks(other_blocks, rest, Map.put(acc, name, url), dump)
     else
-      nil
+      {:error, :invalid_url}
     end
   end
 
@@ -66,7 +73,7 @@ defmodule Jupiter.Parser do
     if(is_valid_role?(role, dump)) do
       parse_blocks(other_blocks, rest, Map.put(acc, name, role), dump)
     else
-      nil
+      {:error, :role_not_found}
     end
   end
 

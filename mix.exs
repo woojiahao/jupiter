@@ -23,7 +23,9 @@ defmodule Jupiter.MixProject do
   defp deps do
     [
       {:nostrum, github: "Kraigie/nostrum"},
-      {:envar, "~> 1.1.0"}
+      {:envar, "~> 1.1.0"},
+      {:ecto_sql, "~> 3.0"},
+      {:postgrex, ">= 0.0.0"}
     ]
   end
 end
