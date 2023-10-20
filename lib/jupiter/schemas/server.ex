@@ -1,7 +1,7 @@
 defmodule Jupiter.Schemas.Server do
   use Ecto.Schema
 
-  @primary_key {:id, :uuid, autogenerate: true}
+  @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "server" do
     field(:server_snowflake, :string)

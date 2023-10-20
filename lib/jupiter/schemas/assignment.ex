@@ -1,13 +1,13 @@
 defmodule Jupiter.Schemas.Assignment do
   use Ecto.Schema
 
-  @primary_key {:id, :uuid, autogenerate: true}
+  @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "assignment" do
     field(:server_snowflake, :string)
     field(:invite_link, :string)
     field(:role_snowflake, :string)
-    belongs_to(:server, Jupiter.Schemas.Server, references: :id, type: :uuid)
+    belongs_to(:server, Jupiter.Schemas.Server, references: :id, type: :binary_id)
   end
 
   def changeset(server, params \\ %{}) do

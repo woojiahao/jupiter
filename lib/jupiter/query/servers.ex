@@ -7,8 +7,7 @@ defmodule Jupiter.Query.Servers do
 
   def get_server(server_snowflake) do
     Jupiter.Schemas.Server
-    |> Jupiter.Repo.get_by(server_snowflake: ^server_snowflake)
-    |> Jupiter.Repo.one()
+    |> Jupiter.Repo.get_by(server_snowflake: server_snowflake)
   end
 
   def add_logging_channel(server_snowflake, logging_channel_snowflake) do
